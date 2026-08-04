@@ -7,6 +7,7 @@ Entry point for the application
 import tkinter as tk
 from tkinter import messagebox
 from login import LoginWindow
+from routes.student import StudentManagementWindow
 from config import *
 
 
@@ -51,7 +52,7 @@ class MainApplication(tk.Tk):
         mgmt_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Management", menu=mgmt_menu)
         mgmt_menu.add_command(label="Departments", command=lambda: self.show_placeholder("Department Management"))
-        mgmt_menu.add_command(label="Students", command=lambda: self.show_placeholder("Student Management"))
+        mgmt_menu.add_command(label="Students", command=self.open_student_management)
         mgmt_menu.add_command(label="Lecturers", command=lambda: self.show_placeholder("Lecturer Management"))
         mgmt_menu.add_command(label="Courses", command=lambda: self.show_placeholder("Course Management"))
         mgmt_menu.add_command(label="Enrollments", command=lambda: self.show_placeholder("Enrollment Management"))
@@ -142,6 +143,10 @@ class MainApplication(tk.Tk):
         message.pack()
 
         self.current_frame = frame
+
+    def open_student_management(self):
+        """Open student management window"""
+        StudentManagementWindow(self)
 
     def change_password(self):
         """Change password dialog"""
