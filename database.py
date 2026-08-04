@@ -1,0 +1,172 @@
+# database.py
+"""
+Database Connection and Operations Layer
+Handles all PostgreSQL operations
+"""
+
+import psycopg2
+from psycopg2 import sql, Error
+from config import DB_CONFIG
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class DatabaseConnection:
+    """Database connection wrapper"""
+
+    _connection = None
+
+    @staticmethod
+    def connect():
+        """Establish database connection"""
+        try:
+            if DatabaseConnection._connection is None:
+                DatabaseConnection._connection = psycopg2.connect(**DB_CONFIG)
+                logger.info("Database connection established")
+            return DatabaseConnection._connection
+        except Error as e:
+            logger.error(f"Database connection error: {e}")
+            raise Exception("Failed to connect to database")
+
+    @staticmethod
+    def disconnect():
+        """Close database connection"""
+        if DatabaseConnection._connection:
+            DatabaseConnection._connection.close()
+            DatabaseConnection._connection = None
+            logger.info("Database connection closed")
+
+    @staticmethod
+    def execute_query(query, params=None):
+        """
+        Execute SELECT query
+        Returns: List of tuples (rows)
+        """
+        try:
+            conn = DatabaseConnection.connect()
+            cursor = conn.cursor()
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
+            results = cursor.fetchall()
+            cursor.close()
+            return results
+        except Error as e:
+            logger.error(f"Query execution error: {e}")
+            raise Exception("Database query failed")
+
+    @staticmethod
+    def execute_update(query, params=None):
+        """
+        Execute INSERT, UPDATE, DELETE query
+        Returns: Number of affected rows
+        """
+        try:
+            conn = DatabaseConnection.connect()
+            cursor = conn.cursor()
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
+            conn.commit()
+            rows_affected = cursor.rowcount
+            cursor.close()
+            logger.info(f"Query executed: {rows_affected} rows affected")
+            return rows_affected
+        except Error as e:
+            conn.rollback()
+            logger.error(f"Update execution error: {e}")
+            raise Exception("Database update failed")
+
+    @staticmethod
+    def execute_fetchone(query, params=None):
+        """
+        Execute query and fetch single row
+        Returns: Single tuple or None
+        """
+        try:
+            conn = DatabaseConnection.connect()
+            cursor = conn.cursor()
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
+            result = cursor.fetchone()
+            cursor.close()
+            return result
+        except Error as e:
+            logger.error(f"Fetchone error: {e}")
+            raise Exception("Database query failed")
+
+
+class UserOperations:
+    """User/Login related database operations"""
+
+    @staticmethod
+    def validate_login(username, password):
+        """
+        Validate user login credentials
+        Returns: (True, user_data) or (False, None)
+        """
+        try:
+            query = """
+                    SELECT u.user_id, u.username, u.email, r.role_name
+                    FROM users u
+                    JOIN roles r ON u.role_id = r.role_id
+                    WHERE u.username = %s \
+                      AND u.password = %s \
+                    """
+            result = DatabaseConnection.execute_fetchone(query, (username, password))
+            if result:
+                return True, {
+                    'user_id': result[0],
+                    'username': result[1],
+                    'email': result[2],
+                    'role': result[3]
+                }
+            return False, None
+        except Exception as e:
+            logger.error(f"Login validation error: {e}")
+            return False, None
+
+    @staticmethod
+    def change_password(user_id, old_password, new_password):
+        """Change user password"""
+        try:
+            # First verify old password
+            query = "SELECT user_id FROM users WHERE user_id = %s AND password = %s"
+            if not DatabaseConnection.execute_fetchone(query, (user_id, old_password)):
+                return False, "Old password is incorrect"
+
+            # Update password
+            update_query = "UPDATE users SET password = %s WHERE user_id = %s"
+            DatabaseConnection.execute_update(update_query, (new_password, user_id))
+            return True, "Password changed successfully"
+        except Exception as e:
+            logger.error(f"Password change error: {e}")
+            return False, "Failed to change password"
+
+    @staticmethod
+    def get_user_by_id(user_id):
+        """Get user information"""
+        try:
+            query = "SELECT user_id, username, email, role_id FROM users WHERE user_id = %s"
+            return DatabaseConnection.execute_fetchone(query, (user_id,))
+        except Exception as e:
+            logger.error(f"Get user error: {e}")
+            return None
+
+
+# Connection pooling helper
+def get_connection():
+    """Get active database connection"""
+    return DatabaseConnection.connect()
+
+
+def close_connection():
+    """Close database connection"""
+    DatabaseConnection.disconnect()
