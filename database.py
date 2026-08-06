@@ -6,7 +6,7 @@ Handles all PostgreSQL operations
 
 import psycopg2
 from psycopg2 import sql, Error
-from config import DB_CONFIG
+from config import DB_CONFIG, ROLE_STUDENT, ROLE_LECTURER
 import logging
 
 # Setup logging
@@ -29,7 +29,7 @@ class DatabaseConnection:
             return DatabaseConnection._connection
         except Error as e:
             logger.error(f"Database connection error: {e}")
-            raise Exception("Failed to connect to database")
+            raise Exception(f"Failed to connect to database: {e}")
 
     @staticmethod
     def disconnect():
@@ -57,7 +57,7 @@ class DatabaseConnection:
             return results
         except Error as e:
             logger.error(f"Query execution error: {e}")
-            raise Exception("Database query failed")
+            raise Exception(f"Database query failed: {e}")
 
     @staticmethod
     def execute_update(query, params=None):
@@ -78,9 +78,10 @@ class DatabaseConnection:
             logger.info(f"Query executed: {rows_affected} rows affected")
             return rows_affected
         except Error as e:
-            conn.rollback()
+            if 'conn' in locals() and conn:
+                conn.rollback()
             logger.error(f"Update execution error: {e}")
-            raise Exception("Database update failed")
+            raise Exception(f"Database update failed: {e}")
 
     @staticmethod
     def execute_fetchone(query, params=None):
@@ -100,7 +101,7 @@ class DatabaseConnection:
             return result
         except Error as e:
             logger.error(f"Fetchone error: {e}")
-            raise Exception("Database query failed")
+            raise Exception(f"Database query failed: {e}")
 
 
 class UserOperations:
@@ -112,14 +113,14 @@ class UserOperations:
         Validate user login credentials
         Returns: (True, user_data) or (False, None)
         """
+        query = """
+                SELECT u.user_id, u.username, u.email, r.role_name
+                FROM users u
+                JOIN roles r ON u.role_id = r.role_id
+                WHERE u.username = %s
+                  AND u.password = %s
+                """
         try:
-            query = """
-                    SELECT u.user_id, u.username, u.email, r.role_name
-                    FROM users u
-                    JOIN roles r ON u.role_id = r.role_id
-                    WHERE u.username = %s \
-                      AND u.password = %s \
-                    """
             result = DatabaseConnection.execute_fetchone(query, (username, password))
             if result:
                 return True, {
@@ -131,7 +132,7 @@ class UserOperations:
             return False, None
         except Exception as e:
             logger.error(f"Login validation error: {e}")
-            return False, None
+            raise Exception(f"Could not verify your login right now: {e}")
 
     @staticmethod
     def change_password(user_id, old_password, new_password):
@@ -159,6 +160,64 @@ class UserOperations:
         except Exception as e:
             logger.error(f"Get user error: {e}")
             return None
+
+    @staticmethod
+    def get_role_id(role_name):
+        """Get role id by role name"""
+        query = "SELECT role_id FROM roles WHERE role_name = %s"
+        return DatabaseConnection.execute_fetchone(query, (role_name,))
+
+    @staticmethod
+    def is_username_taken(username):
+        """Check if username already exists"""
+        query = "SELECT 1 FROM users WHERE username = %s"
+        return DatabaseConnection.execute_fetchone(query, (username,)) is not None
+
+    @staticmethod
+    def is_email_taken(email):
+        """Check if email already exists"""
+        query = "SELECT 1 FROM users WHERE email = %s"
+        return DatabaseConnection.execute_fetchone(query, (email,)) is not None
+
+    @staticmethod
+    def register_account(username, email, password, role_name):
+        """Register a new student or lecturer account"""
+        try:
+            if role_name not in (ROLE_STUDENT, ROLE_LECTURER):
+                return False, "Only student or lecturer accounts can be registered here."
+
+            if UserOperations.is_username_taken(username):
+                return False, "That username is already taken."
+
+            if UserOperations.is_email_taken(email):
+                return False, "That email is already in use."
+
+            role_row = UserOperations.get_role_id(role_name)
+            if not role_row:
+                return False, "The selected role is not available."
+
+            query = """
+                INSERT INTO users (username, email, password, role_id)
+                VALUES (%s, %s, %s, %s)
+                RETURNING user_id
+            """
+            conn = DatabaseConnection.connect()
+            cursor = conn.cursor()
+            try:
+                cursor.execute(query, (username, email, password, role_row[0]))
+                user_id = cursor.fetchone()[0]
+                conn.commit()
+                logger.info("Account registered: %s", user_id)
+                return True, user_id
+            except Error as e:
+                conn.rollback()
+                logger.error(f"Account registration error: {e}")
+                return False, f"Could not create account: {e}"
+            finally:
+                cursor.close()
+        except Exception as e:
+            logger.error(f"Registration helper error: {e}")
+            return False, str(e)
 
 
 # Connection pooling helper

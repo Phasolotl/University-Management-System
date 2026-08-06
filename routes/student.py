@@ -127,6 +127,25 @@ class StudentOperations:
             logger.error(f"Get departments error: {e}")
             return []
 
+    @staticmethod
+    def get_available_users():
+        """Get student-role users not yet linked to a student record"""
+        try:
+            query = """
+                SELECT u.user_id, u.username, u.email
+                FROM users u
+                JOIN roles r ON u.role_id = r.role_id
+                WHERE r.role_name = 'Student'
+                  AND NOT EXISTS (
+                      SELECT 1 FROM students s WHERE s.user_id = u.user_id
+                  )
+                ORDER BY u.username
+            """
+            return DatabaseConnection.execute_query(query)
+        except Exception as e:
+            logger.error(f"Get available users error: {e}")
+            return []
+
 
 class StudentManagementWindow(tk.Toplevel):
     """Student Management GUI"""
@@ -307,10 +326,11 @@ class AddStudentWindow(tk.Toplevel):
         form_frame = tk.Frame(self, bg=COLOR_LIGHT)
         form_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-        # Student fields
+        tk.Label(form_frame, text="User:", font=FONT_NORMAL, bg=COLOR_LIGHT).pack(anchor=tk.W)
+        self.user_combo = ttk.Combobox(form_frame, font=FONT_NORMAL, state="readonly")
+        self.user_combo.pack(fill=tk.X, pady=(4, 10))
+
         fields = [
-            ("Username:", "username"),
-            ("Email:", "email"),
             ("Phone:", "phone"),
             ("Address:", "address"),
             ("Date of Birth (YYYY-MM-DD):", "dob"),
@@ -318,6 +338,9 @@ class AddStudentWindow(tk.Toplevel):
         ]
 
         self.entries = {}
+        self.user_map = {}
+
+        self.load_users()
 
         for label_text, field_name in fields:
             label = tk.Label(form_frame, text=label_text, font=FONT_NORMAL, bg=COLOR_LIGHT)
@@ -359,22 +382,23 @@ class AddStudentWindow(tk.Toplevel):
         self.dept_dict = dept_dict
         self.entries["department"]["values"] = list(dept_dict.keys())
 
+    def load_users(self):
+        """Load student users into combobox"""
+        users = StudentOperations.get_available_users()
+        self.user_map = {f"{username} ({email})": user_id for user_id, username, email in users}
+        self.user_combo["values"] = list(self.user_map.keys())
+
     def save_student(self):
         """Save new student"""
-        username = self.entries["username"].get().strip()
-        email = self.entries["email"].get().strip()
+        user_key = self.user_combo.get().strip()
         phone = self.entries["phone"].get().strip()
         address = self.entries["address"].get().strip()
         dob = self.entries["dob"].get().strip()
         department = self.entries["department"].get()
 
         # Validation
-        if not all([username, email, phone, address, dob, department]):
+        if not all([user_key, phone, address, dob, department]):
             messagebox.showerror("Validation", MSG_FILL_FIELDS)
-            return
-
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            messagebox.showerror("Validation", MSG_INVALID_EMAIL)
             return
 
         if not phone.isdigit() or len(phone) < 10:
@@ -391,7 +415,7 @@ class AddStudentWindow(tk.Toplevel):
         today = datetime.now().strftime("%Y-%m-%d")
 
         success, result = StudentOperations.add_student(
-            user_id=1,
+            user_id=self.user_map[user_key],
             department_id=dept_id,
             enrollment_date=today,
             phone=phone,

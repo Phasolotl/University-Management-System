@@ -4,6 +4,7 @@ University Management System - Main Application
 Entry point for the application
 """
 
+import logging
 import tkinter as tk
 from tkinter import messagebox
 from login import LoginWindow
@@ -18,6 +19,8 @@ from routes.payment import PaymentManagementWindow
 from routes.report import ReportWindow
 from config import *
 
+logger = logging.getLogger(__name__)
+
 
 class MainApplication(tk.Tk):
     """Main application class"""
@@ -27,10 +30,11 @@ class MainApplication(tk.Tk):
 
         self.user_data = user_data
         self.title(f"{APP_TITLE} - {user_data['username']}")
-        self.geometry("1000x600")
+        self.geometry("1280x780")
+        self.minsize(1180, 700)
         self.config(bg=COLOR_PRIMARY)
+        self.report_callback_exception = self._handle_exception
 
-        # Center window
         self.update_idletasks()
         width = self.winfo_width()
         height = self.winfo_height()
@@ -41,6 +45,14 @@ class MainApplication(tk.Tk):
         self.current_frame = None
         self.create_menu()
         self.show_dashboard()
+
+    def _handle_exception(self, exc_type, exc_value, exc_traceback):
+        logger.error("Unhandled app error", exc_info=(exc_type, exc_value, exc_traceback))
+        messagebox.showerror(
+            "Unexpected Error",
+            "The app hit a problem.\n\n"
+            f"{exc_value}\n\nPlease try again or reopen the screen."
+        )
 
     def create_menu(self):
         """Create application menu"""
@@ -88,6 +100,16 @@ class MainApplication(tk.Tk):
         self.current_frame = DashboardFrame(self, self.user_data, self)
         self.current_frame.pack(fill=tk.BOTH, expand=True)
 
+    def _open_window(self, creator, title):
+        try:
+            creator()
+        except Exception as exc:
+            logger.exception("Failed to open %s", title)
+            messagebox.showerror(
+                "Unable to Open Module",
+                f"We couldn't open {title}.\n\n{exc}"
+            )
+
     def show_placeholder(self, title):
         """Show placeholder for modules"""
         self.clear_frame()
@@ -116,35 +138,35 @@ class MainApplication(tk.Tk):
 
     def open_student_management(self):
         """Open student management window"""
-        StudentManagementWindow(self)
+        self._open_window(lambda: StudentManagementWindow(self), "Students")
 
     def open_department_management(self):
         """Open department management window"""
-        DepartmentManagementWindow(self)
+        self._open_window(lambda: DepartmentManagementWindow(self), "Departments")
 
     def open_lecturer_management(self):
         """Open lecturer management window"""
-        LecturerManagementWindow(self)
+        self._open_window(lambda: LecturerManagementWindow(self), "Lecturers")
 
     def open_course_management(self):
         """Open course management window"""
-        CourseManagementWindow(self)
+        self._open_window(lambda: CourseManagementWindow(self), "Courses")
 
     def open_enrollment_management(self):
         """Open enrollment management window"""
-        EnrollmentManagementWindow(self)
+        self._open_window(lambda: EnrollmentManagementWindow(self), "Enrollments")
 
     def open_grade_management(self):
         """Open grade management window"""
-        GradeManagementWindow(self)
+        self._open_window(lambda: GradeManagementWindow(self), "Grades")
 
     def open_payment_management(self):
         """Open payment management window"""
-        PaymentManagementWindow(self)
+        self._open_window(lambda: PaymentManagementWindow(self), "Payments")
 
     def open_reports(self):
         """Open reports window"""
-        ReportWindow(self)
+        self._open_window(lambda: ReportWindow(self), "Reports")
 
     def change_password(self):
         """Change password dialog"""
@@ -174,14 +196,21 @@ class MainApplication(tk.Tk):
 
 def start_application():
     """Start the application"""
-    login = LoginWindow()
-    login.mainloop()
+    try:
+        login = LoginWindow()
+        login.mainloop()
 
-    if login.user_data:
-        app = MainApplication(login.user_data)
-        app.mainloop()
-    else:
-        messagebox.showinfo("Exit", "Thank you for using University Management System!")
+        if login.user_data:
+            app = MainApplication(login.user_data)
+            app.mainloop()
+        else:
+            messagebox.showinfo("Exit", "Thank you for using University Management System!")
+    except Exception as exc:
+        logger.exception("Application startup failed")
+        messagebox.showerror(
+            "Startup Error",
+            f"The app could not start correctly.\n\n{exc}"
+        )
 
 
 if __name__ == "__main__":
