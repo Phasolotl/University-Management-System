@@ -7,7 +7,15 @@ Entry point for the application
 import tkinter as tk
 from tkinter import messagebox
 from login import LoginWindow
+from routes.dashboard import DashboardFrame
+from routes.department import DepartmentManagementWindow
 from routes.student import StudentManagementWindow
+from routes.lecturer import LecturerManagementWindow
+from routes.course import CourseManagementWindow
+from routes.enrollment import EnrollmentManagementWindow
+from routes.grade import GradeManagementWindow
+from routes.payment import PaymentManagementWindow
+from routes.report import ReportWindow
 from config import *
 
 
@@ -51,18 +59,18 @@ class MainApplication(tk.Tk):
         # Management Menu
         mgmt_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Management", menu=mgmt_menu)
-        mgmt_menu.add_command(label="Departments", command=lambda: self.show_placeholder("Department Management"))
+        mgmt_menu.add_command(label="Departments", command=self.open_department_management)
         mgmt_menu.add_command(label="Students", command=self.open_student_management)
-        mgmt_menu.add_command(label="Lecturers", command=lambda: self.show_placeholder("Lecturer Management"))
-        mgmt_menu.add_command(label="Courses", command=lambda: self.show_placeholder("Course Management"))
-        mgmt_menu.add_command(label="Enrollments", command=lambda: self.show_placeholder("Enrollment Management"))
+        mgmt_menu.add_command(label="Lecturers", command=self.open_lecturer_management)
+        mgmt_menu.add_command(label="Courses", command=self.open_course_management)
+        mgmt_menu.add_command(label="Enrollments", command=self.open_enrollment_management)
 
         # Academic Menu
         academic_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Academic", menu=academic_menu)
-        academic_menu.add_command(label="Grades", command=lambda: self.show_placeholder("Grade Management"))
-        academic_menu.add_command(label="Payments", command=lambda: self.show_placeholder("Payment Management"))
-        academic_menu.add_command(label="Reports", command=lambda: self.show_placeholder("Reports"))
+        academic_menu.add_command(label="Grades", command=self.open_grade_management)
+        academic_menu.add_command(label="Payments", command=self.open_payment_management)
+        academic_menu.add_command(label="Reports", command=self.open_reports)
 
         # Tools Menu
         tools_menu = tk.Menu(menubar, tearoff=0)
@@ -77,46 +85,8 @@ class MainApplication(tk.Tk):
     def show_dashboard(self):
         """Show dashboard"""
         self.clear_frame()
-        frame = tk.Frame(self, bg=COLOR_LIGHT)
-        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-        title = tk.Label(
-            frame,
-            text="Dashboard",
-            font=FONT_TITLE,
-            fg=COLOR_PRIMARY,
-            bg=COLOR_LIGHT
-        )
-        title.pack(pady=20)
-
-        welcome = tk.Label(
-            frame,
-            text=f"Welcome, {self.user_data['username']}!",
-            font=FONT_SUBTITLE,
-            fg=COLOR_TEXT,
-            bg=COLOR_LIGHT
-        )
-        welcome.pack(pady=10)
-
-        role = tk.Label(
-            frame,
-            text=f"Role: {self.user_data['role']}",
-            font=FONT_NORMAL,
-            fg=COLOR_SECONDARY,
-            bg=COLOR_LIGHT
-        )
-        role.pack()
-
-        info = tk.Label(
-            frame,
-            text="Use the menu above to navigate through different modules.",
-            font=FONT_SMALL,
-            fg=COLOR_TEXT,
-            bg=COLOR_LIGHT
-        )
-        info.pack(pady=30)
-
-        self.current_frame = frame
+        self.current_frame = DashboardFrame(self, self.user_data, self)
+        self.current_frame.pack(fill=tk.BOTH, expand=True)
 
     def show_placeholder(self, title):
         """Show placeholder for modules"""
@@ -147,6 +117,34 @@ class MainApplication(tk.Tk):
     def open_student_management(self):
         """Open student management window"""
         StudentManagementWindow(self)
+
+    def open_department_management(self):
+        """Open department management window"""
+        DepartmentManagementWindow(self)
+
+    def open_lecturer_management(self):
+        """Open lecturer management window"""
+        LecturerManagementWindow(self)
+
+    def open_course_management(self):
+        """Open course management window"""
+        CourseManagementWindow(self)
+
+    def open_enrollment_management(self):
+        """Open enrollment management window"""
+        EnrollmentManagementWindow(self)
+
+    def open_grade_management(self):
+        """Open grade management window"""
+        GradeManagementWindow(self)
+
+    def open_payment_management(self):
+        """Open payment management window"""
+        PaymentManagementWindow(self)
+
+    def open_reports(self):
+        """Open reports window"""
+        ReportWindow(self)
 
     def change_password(self):
         """Change password dialog"""
