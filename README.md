@@ -21,19 +21,6 @@ A desktop-based University Management System developed using **Python Tkinter** 
 * pgAdmin 4
 * psycopg2
 
-## Project Structure
-
-```text
-UniversityManagement/
-├── main.py
-├── database.py
-├── assets/
-├── database/
-│   └── student_management.sql
-├── requirements.txt
-└── README.md
-```
-
 ## Installation
 
 1. Install **Python 3**.
