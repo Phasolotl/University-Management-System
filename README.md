@@ -36,7 +36,7 @@ A desktop-based University Management System developed using **Python Tkinter** 
 pip install -r requirements.txt
 ```
 
-6. Open **`config.py`** and update the `DB_CONFIG` dictionary with your PostgreSQL credentials (especially the `password` and `database` name if you changed it).
+6. Update the PostgreSQL connection settings in the project if necessary.
 7. Run the application:
 
 ```bash
