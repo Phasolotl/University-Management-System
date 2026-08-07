@@ -3,11 +3,13 @@
 Database Connection and Operations Layer
 Handles all PostgreSQL operations
 """
+import datetime
 
 import psycopg2
 from psycopg2 import sql, Error
 from config import DB_CONFIG, ROLE_STUDENT, ROLE_LECTURER
 import logging
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -113,23 +115,25 @@ class UserOperations:
         Validate user login credentials
         Returns: (True, user_data) or (False, None)
         """
-        query = """
-                SELECT u.user_id, u.username, u.email, r.role_name
-                FROM users u
-                JOIN roles r ON u.role_id = r.role_id
-                WHERE u.username = %s
-                  AND u.password = %s
-                """
         try:
-            result = DatabaseConnection.execute_fetchone(query, (username, password))
+            query = """
+                    SELECT u.user_id, u.username, u.email, r.role_name, u.password
+                    FROM users u
+                             JOIN roles r ON u.role_id = r.role_id
+                    WHERE u.username = %s \
+                    """
+            result = DatabaseConnection.execute_fetchone(query, (username,))
             if result:
-                return True, {
-                    'user_id': result[0],
-                    'username': result[1],
-                    'email': result[2],
-                    'role': result[3]
-                }
-            return False, None
+                stored_hash = result[4]  # password column is index 4
+                if check_password_hash(stored_hash, password):
+                    return True, {
+                        'user_id': result[0],
+                        'username': result[1],
+                        'email': result[2],
+                        'role': result[3]
+                    }
+                return False, None
+
         except Exception as e:
             logger.error(f"Login validation error: {e}")
             raise Exception(f"Could not verify your login right now: {e}")
@@ -138,15 +142,16 @@ class UserOperations:
     def change_password(user_id, old_password, new_password):
         """Change user password"""
         try:
-            # First verify old password
-            query = "SELECT user_id FROM users WHERE user_id = %s AND password = %s"
-            if not DatabaseConnection.execute_fetchone(query, (user_id, old_password)):
+            # Verify old password
+            query = "SELECT password FROM users WHERE user_id = %s"
+            res = DatabaseConnection.execute_fetchone(query, (user_id,))
+            if not res or not check_password_hash(res[0], old_password):
                 return False, "Old password is incorrect"
 
-            # Update password
+            # Update with new hashed password
+            new_hashed = generate_password_hash(new_password)
             update_query = "UPDATE users SET password = %s WHERE user_id = %s"
-            DatabaseConnection.execute_update(update_query, (new_password, user_id))
-            return True, "Password changed successfully"
+            DatabaseConnection.execute_update(update_query, (new_hashed, user_id))
         except Exception as e:
             logger.error(f"Password change error: {e}")
             return False, "Failed to change password"
@@ -204,10 +209,38 @@ class UserOperations:
             conn = DatabaseConnection.connect()
             cursor = conn.cursor()
             try:
-                cursor.execute(query, (username, email, password, role_row[0]))
+                hashed_pw = generate_password_hash(password)
+                cursor.execute(query, (username, email, hashed_pw, role_row[0]))
                 user_id = cursor.fetchone()[0]
                 conn.commit()
                 logger.info("Account registered: %s", user_id)
+
+                # Get default department (e.g., the first one)
+                dept_query = "SELECT department_id FROM departments ORDER BY department_id LIMIT 1"
+                cursor.execute(dept_query)
+                dept_row = cursor.fetchone()
+                if not dept_row:
+                    conn.rollback()
+                    return False, "No departments exist. Please contact admin."
+
+                department_id = dept_row[0]
+                today = datetime.date.today().isoformat()
+
+                if role_name == ROLE_STUDENT:
+                    # Insert into students
+                    insert_student = """
+                                     INSERT INTO students (user_id, department_id, first_name, last_name, enrollment_date)
+                                     VALUES (%s, %s, %s, %s, %s) \
+                                     """
+                    cursor.execute(insert_student, (user_id, department_id, "New", "Student", today))
+                elif role_name == ROLE_LECTURER:
+                    # Insert into lecturers
+                    insert_lecturer = """
+                                      INSERT INTO lecturers (user_id, department_id, first_name, last_name, hire_date)
+                                      VALUES (%s, %s, %s, %s, %s) \
+                                      """
+                    cursor.execute(insert_lecturer, (user_id, department_id, "New", "Lecturer", today))
+                conn.commit()
                 return True, user_id
             except Error as e:
                 conn.rollback()

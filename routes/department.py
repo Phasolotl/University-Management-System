@@ -214,6 +214,9 @@ class AddDepartmentWindow(_DepartmentFormBase):
         self.geometry("380x300")
         self.config(bg=COLOR_LIGHT)
         self.parent = parent
+        self.transient(parent)
+        self.grab_set()
+        self.focus_force()
         self._common_fields()
         self._buttons("Save", self.save_department)
 

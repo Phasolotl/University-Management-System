@@ -76,7 +76,7 @@ class StudentOperations:
         try:
             query = """
                 UPDATE students 
-                SET phone = %s, address = %s, department_id = %s, updated_at = CURRENT_TIMESTAMP
+                SET phone = %s, address = %s, department_id = %s
                 WHERE student_id = %s
             """
             DatabaseConnection.execute_update(query, (phone, address, department_id, student_id))
@@ -319,6 +319,10 @@ class AddStudentWindow(tk.Toplevel):
         self.config(bg=COLOR_LIGHT)
         self.parent = parent
 
+        self.transient(parent)
+        self.grab_set()
+        self.focus_force()
+
         self.create_widgets()
 
     def create_widgets(self):
@@ -392,7 +396,7 @@ class AddStudentWindow(tk.Toplevel):
         """Save new student"""
         user_key = self.user_combo.get().strip()
         phone = self.entries["phone"].get().strip()
-        address = self.entries["address"].get().strip()
+        address = self.entries["address"].get("1.0", tk.END).strip()
         dob = self.entries["dob"].get().strip()
         department = self.entries["department"].get()
 

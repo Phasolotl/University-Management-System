@@ -23,22 +23,19 @@ class GradeOperations:
     @staticmethod
     def get_all_grades():
         query = """
-            SELECT g.grade_id, u.username, c.course_code, g.assignment_1, g.assignment_2,
-                   g.midterm, g.final_exam, g.final_grade, g.grade_letter
+            SELECT g.grade_id, u.username, c.course_code, g.score, g.grade_letter
             FROM grades g
             JOIN enrollments e ON g.enrollment_id = e.enrollment_id
             JOIN students s ON e.student_id = s.student_id
             JOIN users u ON s.user_id = u.user_id
             JOIN courses c ON e.course_id = c.course_id
-            ORDER BY g.grade_id
         """
         return DatabaseConnection.execute_query(query)
 
     @staticmethod
     def search_grades(term):
         query = """
-            SELECT g.grade_id, u.username, c.course_code, g.assignment_1, g.assignment_2,
-                   g.midterm, g.final_exam, g.final_grade, g.grade_letter
+            SELECT g.grade_id, u.username, c.course_code, g.score, g.grade_letter
             FROM grades g
             JOIN enrollments e ON g.enrollment_id = e.enrollment_id
             JOIN students s ON e.student_id = s.student_id
@@ -55,7 +52,7 @@ class GradeOperations:
     @staticmethod
     def get_grade_by_id(grade_id):
         query = """
-            SELECT grade_id, enrollment_id, assignment_1, assignment_2, midterm, final_exam
+            SELECT g.grade_id, u.username, c.course_code, g.score, g.grade_letter
             FROM grades
             WHERE grade_id = %s
         """
@@ -78,11 +75,11 @@ class GradeOperations:
 
     @staticmethod
     def add_grade(enrollment_id, assignment_1, assignment_2, midterm, final_exam):
-        final_grade, grade_letter = GradeOperations.calculate_final_grade(
+        score, grade_letter = GradeOperations.calculate_final_grade(
             assignment_1, assignment_2, midterm, final_exam
         )
         query = """
-            INSERT INTO grades (enrollment_id, assignment_1, assignment_2, midterm, final_exam, final_grade, grade_letter)
+            INSERT INTO grades (enrollment_id, score, grade_letter)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING grade_id
         """
@@ -91,7 +88,7 @@ class GradeOperations:
         try:
             cursor.execute(
                 query,
-                (enrollment_id, assignment_1, assignment_2, midterm, final_exam, final_grade, grade_letter),
+                (enrollment_id, score, grade_letter),
             )
             grade_id = cursor.fetchone()[0]
             conn.commit()
@@ -106,24 +103,20 @@ class GradeOperations:
 
     @staticmethod
     def update_grade(grade_id, enrollment_id, assignment_1, assignment_2, midterm, final_exam):
-        final_grade, grade_letter = GradeOperations.calculate_final_grade(
+        score, grade_letter = GradeOperations.calculate_final_grade(
             assignment_1, assignment_2, midterm, final_exam
         )
         query = """
             UPDATE grades
             SET enrollment_id = %s,
-                assignment_1 = %s,
-                assignment_2 = %s,
-                midterm = %s,
-                final_exam = %s,
-                final_grade = %s,
+                score = %s,
                 grade_letter = %s
             WHERE grade_id = %s
         """
         try:
             DatabaseConnection.execute_update(
                 query,
-                (enrollment_id, assignment_1, assignment_2, midterm, final_exam, final_grade, grade_letter, grade_id),
+                (enrollment_id, score, grade_letter, grade_id),
             )
             return True, "Grade updated successfully"
         except Exception as exc:
@@ -292,6 +285,9 @@ class AddGradeWindow(_GradeFormBase):
         self.geometry("420x470")
         self.config(bg=COLOR_LIGHT)
         self.parent = parent
+        self.transient(parent)
+        self.grab_set()
+        self.focus_force()
         self._common_fields()
         self._buttons("Save", self.save_grade)
 

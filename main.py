@@ -18,6 +18,8 @@ from routes.grade import GradeManagementWindow
 from routes.payment import PaymentManagementWindow
 from routes.report import ReportWindow
 from config import *
+import atexit
+from database import close_connection
 
 logger = logging.getLogger(__name__)
 
@@ -211,6 +213,8 @@ def start_application():
             "Startup Error",
             f"The app could not start correctly.\n\n{exc}"
         )
+
+    atexit.register(close_connection)
 
 
 if __name__ == "__main__":

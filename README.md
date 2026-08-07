@@ -21,32 +21,22 @@ A desktop-based University Management System developed using **Python Tkinter** 
 * pgAdmin 4
 * psycopg2
 
-## Project Structure
-
-```text
-UniversityManagement/
-├── main.py
-├── database.py
-├── assets/
-├── database/
-│   └── student_management.sql
-├── requirements.txt
-└── README.md
-```
 
 ## Installation
 
-1. Install **Python 3**.
+1. Install **Python 3** (3.8 or later is recommended).
 2. Install **PostgreSQL** and **pgAdmin 4**.
-3. Create a new PostgreSQL database.
-4. Import the `student_management.sql` file into the database.
+3. Create a new PostgreSQL database named **`university_management`** (or use a different name, but remember to update `config.py` accordingly).
+4. Import the provided SQL dump file **`university_management.sql`** into your database:
+   - Before importing, **remove the first and last lines** of the file (they contain `\restrict` and `\unrestrict` – these are not standard PostgreSQL commands). If you cannot find them, you can safely ignore this precaution.
+   - Then, use `psql` or pgAdmin to restore the dump.
 5. Install the required Python packages:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-6. Update the PostgreSQL connection settings in the project if necessary.
+6. Open **`config.py`** and update the `DB_CONFIG` dictionary with your PostgreSQL credentials (especially the `password` and `database` name if you changed it).
 7. Run the application:
 
 ```bash

@@ -29,12 +29,12 @@ class CourseOperations:
     def get_all_courses():
         query = """
             SELECT c.course_id, c.course_code, c.course_name, d.department_name,
-                   u.username, c.credits, COALESCE(c.description, '')
-            FROM courses c
-            JOIN departments d ON c.department_id = d.department_id
-            JOIN lecturers l ON c.lecturer_id = l.lecturer_id
-            JOIN users u ON l.user_id = u.user_id
-            ORDER BY c.course_id
+               u.username, c.credits, COALESCE(c.description, '')
+        FROM courses c
+        JOIN departments d ON c.department_id = d.department_id
+        LEFT JOIN lecturers l ON c.lecturer_id = l.lecturer_id   
+        LEFT JOIN users u ON l.user_id = u.user_id              
+        ORDER BY c.course_id
         """
         return DatabaseConnection.execute_query(query)
 
@@ -42,16 +42,16 @@ class CourseOperations:
     def search_courses(term):
         query = """
             SELECT c.course_id, c.course_code, c.course_name, d.department_name,
-                   u.username, c.credits, COALESCE(c.description, '')
-            FROM courses c
-            JOIN departments d ON c.department_id = d.department_id
-            JOIN lecturers l ON c.lecturer_id = l.lecturer_id
-            JOIN users u ON l.user_id = u.user_id
-            WHERE c.course_code ILIKE %s
-               OR c.course_name ILIKE %s
-               OR d.department_name ILIKE %s
-               OR u.username ILIKE %s
-            ORDER BY c.course_id
+               u.username, c.credits, COALESCE(c.description, '')
+        FROM courses c
+        JOIN departments d ON c.department_id = d.department_id
+        LEFT JOIN lecturers l ON c.lecturer_id = l.lecturer_id
+        LEFT JOIN users u ON l.user_id = u.user_id
+        WHERE c.course_code ILIKE %s
+           OR c.course_name ILIKE %s
+           OR d.department_name ILIKE %s
+           OR u.username ILIKE %s
+        ORDER BY c.course_id
         """
         like = f"%{term}%"
         return DatabaseConnection.execute_query(query, (like, like, like, like))
@@ -308,6 +308,9 @@ class EditCourseWindow(_CourseFormBase):
         self.geometry("450x560")
         self.config(bg=COLOR_LIGHT)
         self.parent = parent
+        self.transient(parent)
+        self.grab_set()
+        self.focus_force()
         self.course_id = course_id
         self._common_fields()
         self._buttons("Update", self.update_course)
