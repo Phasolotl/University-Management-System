@@ -56,3 +56,6 @@ ROLE_STUDENT = "Student"
 
 # Session timeout in minutes
 SESSION_TIMEOUT = 30
+
+# PostgreSQL Tools
+PG_DUMP_PATH = r"C:\Program Files\PostgreSQL\18\bin\pg_dump.exe"

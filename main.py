@@ -6,7 +6,10 @@ Entry point for the application
 
 import logging
 import tkinter as tk
-from tkinter import messagebox
+from datetime import datetime
+import os
+import subprocess
+from tkinter import messagebox, filedialog
 from login import LoginWindow
 from routes.dashboard import DashboardFrame
 from routes.department import DepartmentManagementWindow
@@ -89,7 +92,7 @@ class MainApplication(tk.Tk):
         # Tools Menu
         tools_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Tools", menu=tools_menu)
-        tools_menu.add_command(label="Database Backup", command=lambda: self.show_placeholder("Database Backup"))
+        tools_menu.add_command(label="Backup Database", command=self.backup_database)
 
         # Help Menu
         help_menu = tk.Menu(menubar, tearoff=0)
@@ -137,6 +140,53 @@ class MainApplication(tk.Tk):
         message.pack()
 
         self.current_frame = frame
+
+    def backup_database(self):
+        """Export the entire database to a .sql file using pg_dump."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_filename = f"backup_{timestamp}.sql"
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".sql",
+            filetypes=[("SQL files", "*.sql"), ("All files", "*.*")],
+            initialfile=default_filename,
+            title="Save Database Backup"
+        )
+        if not file_path:
+            return  # User cancelled
+
+        db_config = DB_CONFIG
+        env = os.environ.copy()
+        env["PGPASSWORD"] = db_config["password"]
+
+        pg_dump_cmd = PG_DUMP_PATH if PG_DUMP_PATH else "pg_dump"
+        cmd = [
+            pg_dump_cmd,
+            "-h", db_config["host"],
+            "-p", str(db_config["port"]),
+            "-U", db_config["user"],
+            "-d", db_config["database"],
+            "--clean",
+            "--if-exists",
+            "-f", file_path
+        ]
+
+        try:
+            process = subprocess.run(
+                cmd,
+                env=env,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            messagebox.showinfo("Backup Successful", f"Database backed up to:\n{file_path}")
+        except subprocess.CalledProcessError as e:
+            error_msg = e.stderr.strip() if e.stderr else str(e)
+            messagebox.showerror("Backup Failed", f"pg_dump error:\n{error_msg}")
+        except FileNotFoundError:
+            messagebox.showerror("Backup Failed",
+                                 "pg_dump command not found.\nMake sure PostgreSQL is installed and its bin directory is in your PATH.")
+        except Exception as e:
+            messagebox.showerror("Backup Error", f"Unexpected error:\n{str(e)}")
 
     def open_student_management(self):
         """Open student management window"""
