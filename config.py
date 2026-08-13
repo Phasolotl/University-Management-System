@@ -1,4 +1,11 @@
 # config.py
+
+import os
+import dotenv
+
+dotenv.load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 """
 Application Configuration
 Database connection settings and application constants
@@ -6,11 +13,7 @@ Database connection settings and application constants
 
 # Database Configuration
 DB_CONFIG = {
-    'host': 'localhost',
-    'port': 5432,
-    'database': 'university_management',
-    'user': 'postgres',
-    'password': 'panha'  # Change this to your PostgreSQL password
+    "dsn": DATABASE_URL
 }
 
 # Application Settings
