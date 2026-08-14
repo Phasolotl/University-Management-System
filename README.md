@@ -163,6 +163,10 @@ The `.gitignore` file should contain:
 __pycache__/
 *.pyc
 ```
+After cloning the repository, create a `.env` file in the project root and add your Neon database connection string:
+```
+DATABASE_URL=postgresql://username:password@host/university_management?sslmode=require
+```
 
 ## Requirements
 
