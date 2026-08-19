@@ -155,16 +155,11 @@ class MainApplication(tk.Tk):
             return  # User cancelled
 
         db_config = DB_CONFIG
-        env = os.environ.copy()
-        env["PGPASSWORD"] = db_config["password"]
 
         pg_dump_cmd = PG_DUMP_PATH if PG_DUMP_PATH else "pg_dump"
         cmd = [
             pg_dump_cmd,
-            "-h", db_config["host"],
-            "-p", str(db_config["port"]),
-            "-U", db_config["user"],
-            "-d", db_config["database"],
+            db_config["dsn"],
             "--clean",
             "--if-exists",
             "-f", file_path
@@ -173,7 +168,6 @@ class MainApplication(tk.Tk):
         try:
             process = subprocess.run(
                 cmd,
-                env=env,
                 capture_output=True,
                 text=True,
                 check=True

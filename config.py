@@ -2,6 +2,7 @@
 
 import os
 import dotenv
+import shutil
 
 dotenv.load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -61,4 +62,4 @@ ROLE_STUDENT = "Student"
 SESSION_TIMEOUT = 30
 
 # PostgreSQL Tools
-PG_DUMP_PATH = r"C:\Program Files\PostgreSQL\18\bin\pg_dump.exe"
+PG_DUMP_PATH = shutil.which("pg_dump")
