@@ -2,10 +2,10 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 18.4
--- Dumped by pg_dump version 18.4
+\restrict 0R65wC7R0KHl9O8KeHb96bDzzqzUw3cWhgqZp8DwOmlAombdssys9jrfKzheW89
 
--- Started on 2026-08-06 18:42:04
+-- Dumped from database version 18.6 (3484359)
+-- Dumped by pg_dump version 18.4
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,12 +19,76 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_role_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.students DROP CONSTRAINT IF EXISTS students_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.students DROP CONSTRAINT IF EXISTS students_department_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.payments DROP CONSTRAINT IF EXISTS payments_student_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.lecturers DROP CONSTRAINT IF EXISTS lecturers_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.lecturers DROP CONSTRAINT IF EXISTS lecturers_department_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.grades DROP CONSTRAINT IF EXISTS grades_enrollment_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.enrollments DROP CONSTRAINT IF EXISTS enrollments_student_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.enrollments DROP CONSTRAINT IF EXISTS enrollments_course_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.courses DROP CONSTRAINT IF EXISTS courses_lecturer_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.courses DROP CONSTRAINT IF EXISTS courses_department_id_fkey;
+DROP INDEX IF EXISTS public.idx_users_role_id;
+DROP INDEX IF EXISTS public.idx_students_user_id;
+DROP INDEX IF EXISTS public.idx_students_department_id;
+DROP INDEX IF EXISTS public.idx_payments_student_id;
+DROP INDEX IF EXISTS public.idx_lecturers_user_id;
+DROP INDEX IF EXISTS public.idx_lecturers_department_id;
+DROP INDEX IF EXISTS public.idx_grades_enrollment_id;
+DROP INDEX IF EXISTS public.idx_enrollments_student_id;
+DROP INDEX IF EXISTS public.idx_enrollments_course_id;
+DROP INDEX IF EXISTS public.idx_courses_lecturer_id;
+DROP INDEX IF EXISTS public.idx_courses_department_id;
+ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_username_key;
+ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_pkey;
+ALTER TABLE IF EXISTS ONLY public.users DROP CONSTRAINT IF EXISTS users_email_key;
+ALTER TABLE IF EXISTS ONLY public.students DROP CONSTRAINT IF EXISTS students_pkey;
+ALTER TABLE IF EXISTS ONLY public.roles DROP CONSTRAINT IF EXISTS roles_role_name_key;
+ALTER TABLE IF EXISTS ONLY public.roles DROP CONSTRAINT IF EXISTS roles_pkey;
+ALTER TABLE IF EXISTS ONLY public.payments DROP CONSTRAINT IF EXISTS payments_pkey;
+ALTER TABLE IF EXISTS ONLY public.lecturers DROP CONSTRAINT IF EXISTS lecturers_pkey;
+ALTER TABLE IF EXISTS ONLY public.grades DROP CONSTRAINT IF EXISTS grades_pkey;
+ALTER TABLE IF EXISTS ONLY public.enrollments DROP CONSTRAINT IF EXISTS enrollments_student_id_course_id_key;
+ALTER TABLE IF EXISTS ONLY public.enrollments DROP CONSTRAINT IF EXISTS enrollments_pkey;
+ALTER TABLE IF EXISTS ONLY public.departments DROP CONSTRAINT IF EXISTS departments_pkey;
+ALTER TABLE IF EXISTS ONLY public.departments DROP CONSTRAINT IF EXISTS departments_department_name_key;
+ALTER TABLE IF EXISTS ONLY public.departments DROP CONSTRAINT IF EXISTS departments_department_code_key;
+ALTER TABLE IF EXISTS ONLY public.courses DROP CONSTRAINT IF EXISTS courses_pkey;
+ALTER TABLE IF EXISTS ONLY public.courses DROP CONSTRAINT IF EXISTS courses_course_code_key;
+ALTER TABLE IF EXISTS public.users ALTER COLUMN user_id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.students ALTER COLUMN student_id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.roles ALTER COLUMN role_id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.payments ALTER COLUMN payment_id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.lecturers ALTER COLUMN lecturer_id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.grades ALTER COLUMN grade_id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.enrollments ALTER COLUMN enrollment_id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.departments ALTER COLUMN department_id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.courses ALTER COLUMN course_id DROP DEFAULT;
+DROP SEQUENCE IF EXISTS public.users_user_id_seq;
+DROP TABLE IF EXISTS public.users;
+DROP SEQUENCE IF EXISTS public.students_student_id_seq;
+DROP TABLE IF EXISTS public.students;
+DROP SEQUENCE IF EXISTS public.roles_role_id_seq;
+DROP TABLE IF EXISTS public.roles;
+DROP SEQUENCE IF EXISTS public.payments_payment_id_seq;
+DROP TABLE IF EXISTS public.payments;
+DROP SEQUENCE IF EXISTS public.lecturers_lecturer_id_seq;
+DROP TABLE IF EXISTS public.lecturers;
+DROP SEQUENCE IF EXISTS public.grades_grade_id_seq;
+DROP TABLE IF EXISTS public.grades;
+DROP SEQUENCE IF EXISTS public.enrollments_enrollment_id_seq;
+DROP TABLE IF EXISTS public.enrollments;
+DROP SEQUENCE IF EXISTS public.departments_department_id_seq;
+DROP TABLE IF EXISTS public.departments;
+DROP SEQUENCE IF EXISTS public.courses_course_id_seq;
+DROP TABLE IF EXISTS public.courses;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- TOC entry 230 (class 1259 OID 17033)
 -- Name: courses; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -43,7 +107,6 @@ CREATE TABLE public.courses (
 ALTER TABLE public.courses OWNER TO postgres;
 
 --
--- TOC entry 229 (class 1259 OID 17032)
 -- Name: courses_course_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -59,8 +122,6 @@ CREATE SEQUENCE public.courses_course_id_seq
 ALTER SEQUENCE public.courses_course_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5140 (class 0 OID 0)
--- Dependencies: 229
 -- Name: courses_course_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -68,7 +129,6 @@ ALTER SEQUENCE public.courses_course_id_seq OWNED BY public.courses.course_id;
 
 
 --
--- TOC entry 224 (class 1259 OID 16972)
 -- Name: departments; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -84,7 +144,6 @@ CREATE TABLE public.departments (
 ALTER TABLE public.departments OWNER TO postgres;
 
 --
--- TOC entry 223 (class 1259 OID 16971)
 -- Name: departments_department_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -100,8 +159,6 @@ CREATE SEQUENCE public.departments_department_id_seq
 ALTER SEQUENCE public.departments_department_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5141 (class 0 OID 0)
--- Dependencies: 223
 -- Name: departments_department_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -109,7 +166,6 @@ ALTER SEQUENCE public.departments_department_id_seq OWNED BY public.departments.
 
 
 --
--- TOC entry 232 (class 1259 OID 17060)
 -- Name: enrollments; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -125,7 +181,6 @@ CREATE TABLE public.enrollments (
 ALTER TABLE public.enrollments OWNER TO postgres;
 
 --
--- TOC entry 231 (class 1259 OID 17059)
 -- Name: enrollments_enrollment_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -141,8 +196,6 @@ CREATE SEQUENCE public.enrollments_enrollment_id_seq
 ALTER SEQUENCE public.enrollments_enrollment_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5142 (class 0 OID 0)
--- Dependencies: 231
 -- Name: enrollments_enrollment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -150,7 +203,6 @@ ALTER SEQUENCE public.enrollments_enrollment_id_seq OWNED BY public.enrollments.
 
 
 --
--- TOC entry 234 (class 1259 OID 17084)
 -- Name: grades; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -167,7 +219,6 @@ CREATE TABLE public.grades (
 ALTER TABLE public.grades OWNER TO postgres;
 
 --
--- TOC entry 233 (class 1259 OID 17083)
 -- Name: grades_grade_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -183,8 +234,6 @@ CREATE SEQUENCE public.grades_grade_id_seq
 ALTER SEQUENCE public.grades_grade_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5143 (class 0 OID 0)
--- Dependencies: 233
 -- Name: grades_grade_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -192,7 +241,6 @@ ALTER SEQUENCE public.grades_grade_id_seq OWNED BY public.grades.grade_id;
 
 
 --
--- TOC entry 228 (class 1259 OID 17011)
 -- Name: lecturers; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -213,7 +261,6 @@ CREATE TABLE public.lecturers (
 ALTER TABLE public.lecturers OWNER TO postgres;
 
 --
--- TOC entry 227 (class 1259 OID 17010)
 -- Name: lecturers_lecturer_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -229,8 +276,6 @@ CREATE SEQUENCE public.lecturers_lecturer_id_seq
 ALTER SEQUENCE public.lecturers_lecturer_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5144 (class 0 OID 0)
--- Dependencies: 227
 -- Name: lecturers_lecturer_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -238,7 +283,6 @@ ALTER SEQUENCE public.lecturers_lecturer_id_seq OWNED BY public.lecturers.lectur
 
 
 --
--- TOC entry 236 (class 1259 OID 17100)
 -- Name: payments; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -257,7 +301,6 @@ CREATE TABLE public.payments (
 ALTER TABLE public.payments OWNER TO postgres;
 
 --
--- TOC entry 235 (class 1259 OID 17099)
 -- Name: payments_payment_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -273,8 +316,6 @@ CREATE SEQUENCE public.payments_payment_id_seq
 ALTER SEQUENCE public.payments_payment_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5145 (class 0 OID 0)
--- Dependencies: 235
 -- Name: payments_payment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -282,7 +323,6 @@ ALTER SEQUENCE public.payments_payment_id_seq OWNED BY public.payments.payment_i
 
 
 --
--- TOC entry 220 (class 1259 OID 16937)
 -- Name: roles; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -296,7 +336,6 @@ CREATE TABLE public.roles (
 ALTER TABLE public.roles OWNER TO postgres;
 
 --
--- TOC entry 219 (class 1259 OID 16936)
 -- Name: roles_role_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -312,8 +351,6 @@ CREATE SEQUENCE public.roles_role_id_seq
 ALTER SEQUENCE public.roles_role_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5146 (class 0 OID 0)
--- Dependencies: 219
 -- Name: roles_role_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -321,7 +358,6 @@ ALTER SEQUENCE public.roles_role_id_seq OWNED BY public.roles.role_id;
 
 
 --
--- TOC entry 226 (class 1259 OID 16987)
 -- Name: students; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -343,7 +379,6 @@ CREATE TABLE public.students (
 ALTER TABLE public.students OWNER TO postgres;
 
 --
--- TOC entry 225 (class 1259 OID 16986)
 -- Name: students_student_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -359,8 +394,6 @@ CREATE SEQUENCE public.students_student_id_seq
 ALTER SEQUENCE public.students_student_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5147 (class 0 OID 0)
--- Dependencies: 225
 -- Name: students_student_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -368,7 +401,6 @@ ALTER SEQUENCE public.students_student_id_seq OWNED BY public.students.student_i
 
 
 --
--- TOC entry 222 (class 1259 OID 16950)
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -385,7 +417,6 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- TOC entry 221 (class 1259 OID 16949)
 -- Name: users_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -401,8 +432,6 @@ CREATE SEQUENCE public.users_user_id_seq
 ALTER SEQUENCE public.users_user_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5148 (class 0 OID 0)
--- Dependencies: 221
 -- Name: users_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -410,7 +439,6 @@ ALTER SEQUENCE public.users_user_id_seq OWNED BY public.users.user_id;
 
 
 --
--- TOC entry 4905 (class 2604 OID 17036)
 -- Name: courses course_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -418,7 +446,6 @@ ALTER TABLE ONLY public.courses ALTER COLUMN course_id SET DEFAULT nextval('publ
 
 
 --
--- TOC entry 4899 (class 2604 OID 16975)
 -- Name: departments department_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -426,7 +453,6 @@ ALTER TABLE ONLY public.departments ALTER COLUMN department_id SET DEFAULT nextv
 
 
 --
--- TOC entry 4908 (class 2604 OID 17063)
 -- Name: enrollments enrollment_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -434,7 +460,6 @@ ALTER TABLE ONLY public.enrollments ALTER COLUMN enrollment_id SET DEFAULT nextv
 
 
 --
--- TOC entry 4910 (class 2604 OID 17087)
 -- Name: grades grade_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -442,7 +467,6 @@ ALTER TABLE ONLY public.grades ALTER COLUMN grade_id SET DEFAULT nextval('public
 
 
 --
--- TOC entry 4903 (class 2604 OID 17014)
 -- Name: lecturers lecturer_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -450,7 +474,6 @@ ALTER TABLE ONLY public.lecturers ALTER COLUMN lecturer_id SET DEFAULT nextval('
 
 
 --
--- TOC entry 4913 (class 2604 OID 17103)
 -- Name: payments payment_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -458,7 +481,6 @@ ALTER TABLE ONLY public.payments ALTER COLUMN payment_id SET DEFAULT nextval('pu
 
 
 --
--- TOC entry 4896 (class 2604 OID 16940)
 -- Name: roles role_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -466,7 +488,6 @@ ALTER TABLE ONLY public.roles ALTER COLUMN role_id SET DEFAULT nextval('public.r
 
 
 --
--- TOC entry 4901 (class 2604 OID 16990)
 -- Name: students student_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -474,7 +495,6 @@ ALTER TABLE ONLY public.students ALTER COLUMN student_id SET DEFAULT nextval('pu
 
 
 --
--- TOC entry 4897 (class 2604 OID 16953)
 -- Name: users user_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -482,29 +502,24 @@ ALTER TABLE ONLY public.users ALTER COLUMN user_id SET DEFAULT nextval('public.u
 
 
 --
--- TOC entry 5128 (class 0 OID 17033)
--- Dependencies: 230
 -- Data for Name: courses; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.courses (course_id, course_name, course_code, department_id, lecturer_id, credits, description, created_at) FROM stdin;
+1	Multi-Media and Web design	CS-170	1	1	4	HTML+CSS+JS course for web designing	2026-08-19 11:31:54.467269
 \.
 
 
 --
--- TOC entry 5122 (class 0 OID 16972)
--- Dependencies: 224
 -- Data for Name: departments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.departments (department_id, department_name, department_code, head_of_department, created_at) FROM stdin;
-1	Computer Science	CS	Ya Yu Eol	2026-08-06 18:21:23.912927
+1	Computer Science	CS	Ya Yu Eol	2026-08-13 11:07:27.582951
 \.
 
 
 --
--- TOC entry 5130 (class 0 OID 17060)
--- Dependencies: 232
 -- Data for Name: enrollments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -513,8 +528,6 @@ COPY public.enrollments (enrollment_id, student_id, course_id, enrollment_date, 
 
 
 --
--- TOC entry 5132 (class 0 OID 17084)
--- Dependencies: 234
 -- Data for Name: grades; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -523,18 +536,15 @@ COPY public.grades (grade_id, enrollment_id, score, grade_letter, created_at, up
 
 
 --
--- TOC entry 5126 (class 0 OID 17011)
--- Dependencies: 228
 -- Data for Name: lecturers; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.lecturers (lecturer_id, user_id, department_id, first_name, last_name, qualification, phone, office_location, hire_date, created_at) FROM stdin;
+1	2	1	New	Lecturer	\N	\N	\N	2026-08-17	2026-08-17 03:23:29.268913
 \.
 
 
 --
--- TOC entry 5134 (class 0 OID 17100)
--- Dependencies: 236
 -- Data for Name: payments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -543,8 +553,6 @@ COPY public.payments (payment_id, student_id, amount, payment_date, payment_meth
 
 
 --
--- TOC entry 5118 (class 0 OID 16937)
--- Dependencies: 220
 -- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -556,38 +564,33 @@ COPY public.roles (role_id, role_name, description) FROM stdin;
 
 
 --
--- TOC entry 5124 (class 0 OID 16987)
--- Dependencies: 226
 -- Data for Name: students; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.students (student_id, user_id, department_id, first_name, last_name, gender, enrollment_date, phone, address, date_of_birth, created_at) FROM stdin;
+1	3	1	New	Student	\N	2026-08-19	\N	\N	\N	2026-08-19 11:31:45.610357
 \.
 
 
 --
--- TOC entry 5120 (class 0 OID 16950)
--- Dependencies: 222
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.users (user_id, username, email, password, role_id, created_at) FROM stdin;
-1	admin	admin@test.com	admin123	1	2026-08-04 13:35:38.122392
+1	admin	admin@gmail.com	scrypt:32768:8:1$EMLGPws73ZyyYHyz$eea5ead06eb38a151937b4d69346f906ac1033b4c89ada882602857cee9657ed976474ccba6ea2b2446523296dd6bd7eafbd1d81d5b699ef32f669e004535d5f	1	2026-08-13 10:55:54.30878
+2	mr Email	email@email.com	scrypt:32768:8:1$JlQD3Ds9gsEDO8Gi$9fe295fb9ab8fc93ce5f0b2fd1dcb48979e9de2669833b05defa4c34de365b0cbd9aad5f05024bcf52ab7b9e6876419364c1e8540ed5d5c66b0eae95ad54996c	2	2026-08-17 03:23:28.775199
+3	Panha	panha@gmail.com	scrypt:32768:8:1$XQk6FquAtx9T1ie9$407165a4d4054b60985e80d2a052035d635afeddbfdb9b08b24947177bdbc70637d475c3f18b8e271a4610da5bb825b88f6bc1983299f42d17efa245d403d7ff	3	2026-08-19 11:31:45.166235
 \.
 
 
 --
--- TOC entry 5149 (class 0 OID 0)
--- Dependencies: 229
 -- Name: courses_course_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.courses_course_id_seq', 1, false);
+SELECT pg_catalog.setval('public.courses_course_id_seq', 1, true);
 
 
 --
--- TOC entry 5150 (class 0 OID 0)
--- Dependencies: 223
 -- Name: departments_department_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -595,8 +598,6 @@ SELECT pg_catalog.setval('public.departments_department_id_seq', 1, true);
 
 
 --
--- TOC entry 5151 (class 0 OID 0)
--- Dependencies: 231
 -- Name: enrollments_enrollment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -604,8 +605,6 @@ SELECT pg_catalog.setval('public.enrollments_enrollment_id_seq', 1, false);
 
 
 --
--- TOC entry 5152 (class 0 OID 0)
--- Dependencies: 233
 -- Name: grades_grade_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -613,17 +612,13 @@ SELECT pg_catalog.setval('public.grades_grade_id_seq', 1, false);
 
 
 --
--- TOC entry 5153 (class 0 OID 0)
--- Dependencies: 227
 -- Name: lecturers_lecturer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.lecturers_lecturer_id_seq', 1, false);
+SELECT pg_catalog.setval('public.lecturers_lecturer_id_seq', 1, true);
 
 
 --
--- TOC entry 5154 (class 0 OID 0)
--- Dependencies: 235
 -- Name: payments_payment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -631,8 +626,6 @@ SELECT pg_catalog.setval('public.payments_payment_id_seq', 1, false);
 
 
 --
--- TOC entry 5155 (class 0 OID 0)
--- Dependencies: 219
 -- Name: roles_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -640,25 +633,20 @@ SELECT pg_catalog.setval('public.roles_role_id_seq', 3, true);
 
 
 --
--- TOC entry 5156 (class 0 OID 0)
--- Dependencies: 225
 -- Name: students_student_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.students_student_id_seq', 1, false);
+SELECT pg_catalog.setval('public.students_student_id_seq', 1, true);
 
 
 --
--- TOC entry 5157 (class 0 OID 0)
--- Dependencies: 221
 -- Name: users_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_user_id_seq', 1, true);
+SELECT pg_catalog.setval('public.users_user_id_seq', 3, true);
 
 
 --
--- TOC entry 4942 (class 2606 OID 17048)
 -- Name: courses courses_course_code_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -667,7 +655,6 @@ ALTER TABLE ONLY public.courses
 
 
 --
--- TOC entry 4944 (class 2606 OID 17046)
 -- Name: courses courses_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -676,7 +663,6 @@ ALTER TABLE ONLY public.courses
 
 
 --
--- TOC entry 4928 (class 2606 OID 16985)
 -- Name: departments departments_department_code_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -685,7 +671,6 @@ ALTER TABLE ONLY public.departments
 
 
 --
--- TOC entry 4930 (class 2606 OID 16983)
 -- Name: departments departments_department_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -694,7 +679,6 @@ ALTER TABLE ONLY public.departments
 
 
 --
--- TOC entry 4932 (class 2606 OID 16981)
 -- Name: departments departments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -703,7 +687,6 @@ ALTER TABLE ONLY public.departments
 
 
 --
--- TOC entry 4948 (class 2606 OID 17070)
 -- Name: enrollments enrollments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -712,7 +695,6 @@ ALTER TABLE ONLY public.enrollments
 
 
 --
--- TOC entry 4950 (class 2606 OID 17072)
 -- Name: enrollments enrollments_student_id_course_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -721,7 +703,6 @@ ALTER TABLE ONLY public.enrollments
 
 
 --
--- TOC entry 4954 (class 2606 OID 17093)
 -- Name: grades grades_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -730,7 +711,6 @@ ALTER TABLE ONLY public.grades
 
 
 --
--- TOC entry 4940 (class 2606 OID 17021)
 -- Name: lecturers lecturers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -739,7 +719,6 @@ ALTER TABLE ONLY public.lecturers
 
 
 --
--- TOC entry 4958 (class 2606 OID 17113)
 -- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -748,7 +727,6 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- TOC entry 4917 (class 2606 OID 16946)
 -- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -757,7 +735,6 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 4919 (class 2606 OID 16948)
 -- Name: roles roles_role_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -766,7 +743,6 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 4936 (class 2606 OID 16999)
 -- Name: students students_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -775,7 +751,6 @@ ALTER TABLE ONLY public.students
 
 
 --
--- TOC entry 4922 (class 2606 OID 16965)
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -784,7 +759,6 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4924 (class 2606 OID 16961)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -793,7 +767,6 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4926 (class 2606 OID 16963)
 -- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -802,7 +775,6 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4945 (class 1259 OID 17124)
 -- Name: idx_courses_department_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -810,7 +782,6 @@ CREATE INDEX idx_courses_department_id ON public.courses USING btree (department
 
 
 --
--- TOC entry 4946 (class 1259 OID 17125)
 -- Name: idx_courses_lecturer_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -818,7 +789,6 @@ CREATE INDEX idx_courses_lecturer_id ON public.courses USING btree (lecturer_id)
 
 
 --
--- TOC entry 4951 (class 1259 OID 17127)
 -- Name: idx_enrollments_course_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -826,7 +796,6 @@ CREATE INDEX idx_enrollments_course_id ON public.enrollments USING btree (course
 
 
 --
--- TOC entry 4952 (class 1259 OID 17126)
 -- Name: idx_enrollments_student_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -834,7 +803,6 @@ CREATE INDEX idx_enrollments_student_id ON public.enrollments USING btree (stude
 
 
 --
--- TOC entry 4955 (class 1259 OID 17128)
 -- Name: idx_grades_enrollment_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -842,7 +810,6 @@ CREATE INDEX idx_grades_enrollment_id ON public.grades USING btree (enrollment_i
 
 
 --
--- TOC entry 4937 (class 1259 OID 17123)
 -- Name: idx_lecturers_department_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -850,7 +817,6 @@ CREATE INDEX idx_lecturers_department_id ON public.lecturers USING btree (depart
 
 
 --
--- TOC entry 4938 (class 1259 OID 17122)
 -- Name: idx_lecturers_user_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -858,7 +824,6 @@ CREATE INDEX idx_lecturers_user_id ON public.lecturers USING btree (user_id);
 
 
 --
--- TOC entry 4956 (class 1259 OID 17129)
 -- Name: idx_payments_student_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -866,7 +831,6 @@ CREATE INDEX idx_payments_student_id ON public.payments USING btree (student_id)
 
 
 --
--- TOC entry 4933 (class 1259 OID 17121)
 -- Name: idx_students_department_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -874,7 +838,6 @@ CREATE INDEX idx_students_department_id ON public.students USING btree (departme
 
 
 --
--- TOC entry 4934 (class 1259 OID 17120)
 -- Name: idx_students_user_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -882,7 +845,6 @@ CREATE INDEX idx_students_user_id ON public.students USING btree (user_id);
 
 
 --
--- TOC entry 4920 (class 1259 OID 17119)
 -- Name: idx_users_role_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -890,7 +852,6 @@ CREATE INDEX idx_users_role_id ON public.users USING btree (role_id);
 
 
 --
--- TOC entry 4964 (class 2606 OID 17049)
 -- Name: courses courses_department_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -899,7 +860,6 @@ ALTER TABLE ONLY public.courses
 
 
 --
--- TOC entry 4965 (class 2606 OID 17054)
 -- Name: courses courses_lecturer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -908,7 +868,6 @@ ALTER TABLE ONLY public.courses
 
 
 --
--- TOC entry 4966 (class 2606 OID 17078)
 -- Name: enrollments enrollments_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -917,7 +876,6 @@ ALTER TABLE ONLY public.enrollments
 
 
 --
--- TOC entry 4967 (class 2606 OID 17073)
 -- Name: enrollments enrollments_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -926,7 +884,6 @@ ALTER TABLE ONLY public.enrollments
 
 
 --
--- TOC entry 4968 (class 2606 OID 17094)
 -- Name: grades grades_enrollment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -935,7 +892,6 @@ ALTER TABLE ONLY public.grades
 
 
 --
--- TOC entry 4962 (class 2606 OID 17027)
 -- Name: lecturers lecturers_department_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -944,7 +900,6 @@ ALTER TABLE ONLY public.lecturers
 
 
 --
--- TOC entry 4963 (class 2606 OID 17022)
 -- Name: lecturers lecturers_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -953,7 +908,6 @@ ALTER TABLE ONLY public.lecturers
 
 
 --
--- TOC entry 4969 (class 2606 OID 17114)
 -- Name: payments payments_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -962,7 +916,6 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- TOC entry 4960 (class 2606 OID 17005)
 -- Name: students students_department_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -971,7 +924,6 @@ ALTER TABLE ONLY public.students
 
 
 --
--- TOC entry 4961 (class 2606 OID 17000)
 -- Name: students students_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -980,7 +932,6 @@ ALTER TABLE ONLY public.students
 
 
 --
--- TOC entry 4959 (class 2606 OID 16966)
 -- Name: users users_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -988,8 +939,23 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(role_id);
 
 
--- Completed on 2026-08-06 18:42:04
+--
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: cloud_admin
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO neon_superuser WITH GRANT OPTION;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: cloud_admin
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE cloud_admin IN SCHEMA public GRANT ALL ON TABLES TO neon_superuser WITH GRANT OPTION;
+
 
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict 0R65wC7R0KHl9O8KeHb96bDzzqzUw3cWhgqZp8DwOmlAombdssys9jrfKzheW89
+
