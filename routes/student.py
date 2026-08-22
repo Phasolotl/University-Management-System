@@ -7,7 +7,6 @@ Handles all student-related operations (CRUD, search, validation)
 import tkinter as tk
 from tkinter import messagebox, ttk
 from datetime import datetime
-import re
 from database import DatabaseConnection, logger
 from config import *
 

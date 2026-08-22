@@ -185,7 +185,7 @@ class UserOperations:
         return DatabaseConnection.execute_fetchone(query, (email,)) is not None
 
     @staticmethod
-    def register_account(username, email, password, role_name):
+    def register_account(username, email, password, role_name, phone, date_of_birth, gender):
         """Register a new student or lecturer account"""
         try:
             if role_name not in (ROLE_STUDENT, ROLE_LECTURER):
@@ -229,10 +229,10 @@ class UserOperations:
                 if role_name == ROLE_STUDENT:
                     # Insert into students
                     insert_student = """
-                                     INSERT INTO students (user_id, department_id, first_name, last_name, enrollment_date)
-                                     VALUES (%s, %s, %s, %s, %s) \
+                                     INSERT INTO students (user_id, department_id, first_name, last_name, enrollment_date, phone, date_of_birth, gender)
+                                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s) \
                                      """
-                    cursor.execute(insert_student, (user_id, department_id, "New", "Student", today))
+                    cursor.execute(insert_student, (user_id, department_id, "New", "Student", today, phone, date_of_birth, gender))
                 elif role_name == ROLE_LECTURER:
                     # Insert into lecturers
                     insert_lecturer = """

@@ -6,9 +6,9 @@ Handles authentication and registration
 
 import logging
 import re
-import traceback
 import tkinter as tk
 from tkinter import messagebox, ttk
+from tkcalendar import DateEntry
 
 from config import *
 from database import UserOperations
@@ -214,7 +214,7 @@ class RegistrationWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title(f"{APP_TITLE} - Register")
-        self.geometry("540x560")
+        self.geometry("540x700")
         self.resizable(False, False)
         self.config(bg=COLOR_PRIMARY)
         self.report_callback_exception = self._handle_exception
@@ -255,43 +255,164 @@ class RegistrationWindow(tk.Toplevel):
             font=FONT_NORMAL,
             fg="#c9d8e8",
             bg=COLOR_PRIMARY
-        ).pack(anchor=tk.W, pady=(4, 14))
+        ).pack(anchor=tk.W, pady=(4, 10))
 
-        card = tk.Frame(shell, bg=COLOR_LIGHT, highlightbackground="#d6dee8", highlightthickness=1)
+        card = tk.Frame(
+            shell,
+            bg=COLOR_LIGHT,
+            highlightbackground="#d6dee8",
+            highlightthickness=1
+        )
         card.pack(fill=tk.BOTH, expand=True)
 
         form = tk.Frame(card, bg=COLOR_LIGHT)
-        form.pack(fill=tk.BOTH, expand=True, padx=22, pady=22)
+        form.pack(fill=tk.BOTH, expand=True, padx=20, pady=16)
 
         self.entries = {}
-        fields = [
+
+        # Normal text fields
+        text_fields = [
             ("Username", "username"),
             ("Email", "email"),
-            ("Password", "password"),
-            ("Confirm Password", "confirm_password"),
+            ("Phone", "phone"),
         ]
 
-        for label_text, key in fields:
-            tk.Label(form, text=label_text, font=FONT_NORMAL, bg=COLOR_LIGHT, fg=COLOR_TEXT).pack(anchor=tk.W)
+        for label_text, key in text_fields:
+            tk.Label(
+                form,
+                text=label_text,
+                font=FONT_NORMAL,
+                bg=COLOR_LIGHT,
+                fg=COLOR_TEXT
+            ).pack(anchor=tk.W)
+
             entry = tk.Entry(
                 form,
                 font=FONT_NORMAL,
-                show="●" if "password" in key else "",
                 relief=tk.FLAT,
                 highlightthickness=1,
                 highlightbackground="#cfd8e3",
                 highlightcolor=COLOR_SECONDARY
             )
-            entry.pack(fill=tk.X, pady=(4, 12), ipady=6)
+
+            entry.pack(
+                fill=tk.X,
+                pady=(2, 7),
+                ipady=4
+            )
+
             self.entries[key] = entry
 
-        tk.Label(form, text="Account Type", font=FONT_NORMAL, bg=COLOR_LIGHT, fg=COLOR_TEXT).pack(anchor=tk.W)
-        self.role_combo = ttk.Combobox(form, font=FONT_NORMAL, state="readonly")
-        self.role_combo["values"] = (ROLE_STUDENT, ROLE_LECTURER)
-        self.role_combo.pack(fill=tk.X, pady=(4, 16))
+        # Date of Birth
+        tk.Label(
+            form,
+            text="Date of Birth",
+            font=FONT_NORMAL,
+            bg=COLOR_LIGHT,
+            fg=COLOR_TEXT
+        ).pack(anchor=tk.W)
 
-        button_row = tk.Frame(form, bg=COLOR_LIGHT)
-        button_row.pack(fill=tk.X)
+        self.entries["dob"] = DateEntry(
+            form,
+            font=FONT_NORMAL,
+            date_pattern="yyyy-mm-dd",
+            state="readonly",
+            background=COLOR_SECONDARY,
+            foreground="white",
+            borderwidth=1
+        )
+
+        self.entries["dob"].pack(
+            fill=tk.X,
+            pady=(2, 7),
+            ipady=4
+        )
+
+        # Gender
+        tk.Label(
+            form,
+            text="Gender",
+            font=FONT_NORMAL,
+            bg=COLOR_LIGHT,
+            fg=COLOR_TEXT
+        ).pack(anchor=tk.W)
+
+        self.entries["gender"] = ttk.Combobox(
+            form,
+            font=FONT_NORMAL,
+            state="readonly",
+            values=("Male", "Female", "Monk")
+        )
+
+        self.entries["gender"].pack(
+            fill=tk.X,
+            pady=(2, 7),
+            ipady=3
+        )
+
+        # Password fields
+        for label_text, key in [
+            ("Password", "password"),
+            ("Confirm Password", "confirm_password"),
+        ]:
+            tk.Label(
+                form,
+                text=label_text,
+                font=FONT_NORMAL,
+                bg=COLOR_LIGHT,
+                fg=COLOR_TEXT
+            ).pack(anchor=tk.W)
+
+            entry = tk.Entry(
+                form,
+                font=FONT_NORMAL,
+                show="●",
+                relief=tk.FLAT,
+                highlightthickness=1,
+                highlightbackground="#cfd8e3",
+                highlightcolor=COLOR_SECONDARY
+            )
+
+            entry.pack(
+                fill=tk.X,
+                pady=(2, 7),
+                ipady=4
+            )
+
+            self.entries[key] = entry
+
+        tk.Label(
+            form,
+            text="Account Type",
+            font=FONT_NORMAL,
+            bg=COLOR_LIGHT,
+            fg=COLOR_TEXT
+        ).pack(anchor=tk.W)
+
+        self.role_combo = ttk.Combobox(
+            form,
+            font=FONT_NORMAL,
+            state="readonly"
+        )
+
+        self.role_combo["values"] = (
+            ROLE_STUDENT,
+            ROLE_LECTURER
+        )
+
+        self.role_combo.pack(
+            fill=tk.X,
+            pady=(2, 10)
+        )
+
+        button_row = tk.Frame(
+            form,
+            bg=COLOR_LIGHT
+        )
+        button_row.pack(
+            fill=tk.X,
+            pady=(2, 0)
+        )
 
         tk.Button(
             button_row,
@@ -303,7 +424,7 @@ class RegistrationWindow(tk.Toplevel):
             cursor="hand2",
             relief=tk.FLAT,
             padx=14,
-            pady=6
+            pady=5
         ).pack(side=tk.LEFT)
 
         tk.Button(
@@ -316,7 +437,7 @@ class RegistrationWindow(tk.Toplevel):
             cursor="hand2",
             relief=tk.FLAT,
             padx=14,
-            pady=6
+            pady=5
         ).pack(side=tk.LEFT, padx=8)
 
     def register_account(self):
@@ -327,8 +448,11 @@ class RegistrationWindow(tk.Toplevel):
             password = self.entries["password"].get()
             confirm_password = self.entries["confirm_password"].get()
             role_name = self.role_combo.get().strip()
+            phone = self.entries["phone"].get().strip()
+            date_of_birth = self.entries["dob"].get().strip()
+            gender = self.entries["gender"].get().strip()
 
-            if not all([username, email, password, confirm_password, role_name]):
+            if not all([username, email, password, confirm_password, role_name, phone, date_of_birth, gender]):
                 messagebox.showerror("Validation Error", MSG_FILL_FIELDS)
                 return
 
@@ -344,7 +468,7 @@ class RegistrationWindow(tk.Toplevel):
                 messagebox.showerror("Validation Error", "Passwords do not match.")
                 return
 
-            success, result = UserOperations.register_account(username, email, password, role_name)
+            success, result = UserOperations.register_account(username, email, password, role_name, phone, date_of_birth, gender)
             if success:
                 messagebox.showinfo(
                     "Success",
